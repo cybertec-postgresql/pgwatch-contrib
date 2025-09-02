@@ -1,0 +1,76 @@
+name: Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    steps:  
+
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Golang
+        uses: actions/setup-go@v5
+
+      - name: Setup Protobuf
+        uses: ./.github/actions/setup-protobuf
+
+      - name: Generate protobuf files
+        run: go generate ./sinks/pb/
+
+      - name: GolangCI-Lint 
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+
+  Unit-Test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+        cache-dependency-path: 'go.sum'
+
+    - name: Setup Protobuf
+      uses: ./.github/actions/setup-protobuf
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12' 
+
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install pytest
+        pip install -r cmd/pyiceberg_receiver/requirements.txt
+
+    - name: gRPC Golang Tests
+      run: |
+        cd gRPC_sinks
+        go generate ./sinks/pb
+        go test -timeout 20m -failfast -v -coverprofile=profile.cov ./...
+
+    - name: gRPC Python Tests
+      run: |
+        cd gRPC_sinks
+        python3 -m grpc_tools.protoc -I sinks/pb --python_out=cmd/pyiceberg_receiver --grpc_python_out=cmd/pyiceberg_receiver sinks/pb/pgwatch.proto
+        pytest
+
+    - name: Coveralls
+      uses: coverallsapp/github-action@v2
+      with:
+        file: profile.cov 
