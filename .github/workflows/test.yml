@@ -14,6 +14,9 @@ concurrency:
 jobs:
   Lint:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rpc
     steps:  
 
       - name: Check out code
@@ -32,9 +35,13 @@ jobs:
         uses: golangci/golangci-lint-action@v8
         with:
           version: latest
+          working-directory: rpc
 
   Unit-Test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rpc
     steps:
     - uses: actions/checkout@v4
 
@@ -42,7 +49,7 @@ jobs:
       uses: actions/setup-go@v5
       with:
         go-version: '1.23'
-        cache-dependency-path: 'go.sum'
+        cache-dependency-path: 'rpc/go.sum'
 
     - name: Setup Protobuf
       uses: ./.github/actions/setup-protobuf
@@ -60,17 +67,15 @@ jobs:
 
     - name: gRPC Golang Tests
       run: |
-        cd gRPC_sinks
         go generate ./sinks/pb
         go test -timeout 20m -failfast -v -coverprofile=profile.cov ./...
 
     - name: gRPC Python Tests
       run: |
-        cd gRPC_sinks
         python3 -m grpc_tools.protoc -I sinks/pb --python_out=cmd/pyiceberg_receiver --grpc_python_out=cmd/pyiceberg_receiver sinks/pb/pgwatch.proto
         pytest
 
     - name: Coveralls
       uses: coverallsapp/github-action@v2
       with:
-        file: profile.cov 
+        file: rpc/profile.cov 
