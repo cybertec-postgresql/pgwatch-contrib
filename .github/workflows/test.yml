@@ -3,8 +3,12 @@ name: Test
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "rpc/**"
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "rpc/**"
   workflow_dispatch:
 
 concurrency:
