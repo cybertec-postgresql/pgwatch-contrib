@@ -87,14 +87,14 @@ func TestKafka_SyncMetricHandler(t *testing.T) {
 	assert.NoError(t, err)
 	time.Sleep(time.Second) // give some time handler
 
-	_, exists := kpr.conn_regisrty[req.GetDBName()]
+	_, exists := kpr.connRegistry[req.GetDBName()]
 	assert.True(t, exists)
 
-	req.Operation = pb.SyncOp_DeleteOp
+	req.Operation = pb.SyncOperation_DELETE
 	_, err = kpr.SyncMetric(ctx, req)
 	assert.NoError(t, err)
 	time.Sleep(time.Second) // give some time handler
 
-	_, exists = kpr.conn_regisrty[req.GetDBName()]
+	_, exists = kpr.connRegistry[req.GetDBName()]
 	assert.False(t, exists)
 }
