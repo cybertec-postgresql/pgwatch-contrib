@@ -2,49 +2,103 @@ metrics:
     stat_plans:
         description: >
             This metric collects statistics from the `pg_stat_plans` extension.
-            It provides insights about query planning, including number of different plans executed for a query, most used plan, 
-            execution times, and best plan suggestion.
-            This metric is useful for monitoring query performance and identifying queries that needs to be rewritten.
+            It provides insights about different plans for the most resource intensive queries, 
+            including plan, number of calls, and execution times.
+            This metric is useful for monitoring debugging query plans.
         init_sql: CREATE EXTENSION IF NOT EXISTS pg_stat_statements; CREATE EXTENSION IF NOT EXISTS pg_stat_plans;
         sqls:
             16: |-
-                WITH s AS (
-                    SELECT 
-                      queryid, 
-                      max(query::varchar(8000)) as query, 
-                      sum(calls) as query_calls
-                    FROM pg_stat_statements
-                    WHERE dbid = (SELECT oid FROM pg_database WHERE datname = current_database())
-                    GROUP BY queryid
-                    HAVING sum(calls) > 5 AND sum(total_exec_time) > 5
-                ), p AS (
-                    SELECT 
+                WITH p_data AS (
+                  SELECT
+                    max(p.dbid)::int8 as dbid,
+                    max(p.queryid)::int8 as queryid,
+                    p.planid,
+                    sum(p.calls)::int8 as calls,
+                    round(sum(p.total_exec_time)::numeric, 3)::double precision AS total_exec_time,
+                    max(p.plan::varchar(8000)) as plan
+                  FROM pg_stat_plans p
+                  WHERE
+                    dbid = (SELECT oid FROM pg_database WHERE datname = current_database())
+                  GROUP BY p.planid
+                ), q_data AS (
+                  SELECT
+                      max(s.dbid) as dbid,
                       queryid,
-                      planid, 
-                      plan,
-                      calls,
-                      total_exec_time,
-                      COUNT(planid) OVER(PARTITION BY queryid) as cnt,
-                      ROW_NUMBER() OVER(PARTITION BY queryid ORDER BY calls DESC) as crn,
-                      ROW_NUMBER() OVER(PARTITION BY queryid ORDER BY (total_exec_time / calls) DESC) as arn
-                    FROM pg_stat_plans
+                      sum(s.calls)::int8 AS calls,
+                      round(sum(s.total_exec_time)::numeric, 3)::double precision AS total_exec_time,
+                      sum(shared_blks_read)::int8 AS shared_blks_read,
+                      sum(shared_blks_written)::int8 AS shared_blks_written
+                  FROM
+                      pg_stat_statements s
+                  WHERE
+                      calls > 5
+                      AND total_exec_time > 5
+                      AND dbid = (SELECT oid FROM pg_database WHERE datname = current_database())
+                          AND NOT upper(s.query::varchar(50))
+                          LIKE ANY (ARRAY[
+                              'DEALLOCATE%',
+                              'SET %',
+                              'RESET %',
+                              'BEGIN%',
+                              'BEGIN;',
+                              'COMMIT%',
+                              'END%',
+                              'ROLLBACK%',
+                              'SHOW%'
+                              ])
+                  GROUP BY
+                      queryid
                 )
 
-                SELECT 
-                  s.queryid, 
-                  s.query, 
-                  s.query_calls,
-                  p1.cnt as num_of_plans,
-                  p1.planid as most_used_plan_id,
-                  p1.plan as most_used_plan,
-                  p1.calls as most_used_plan_calls,
-                  (p1.total_exec_time / p1.calls) as most_used_plan_avg_exec_time,
-                  p1.total_exec_time as most_used_plan_total_exec_time,
-                  (p2.total_exec_time / p2.calls) as suggested_plan_avg_time,
-                  p2.total_exec_time as suggested_plan_total_time,
-                  p2.planid as suggested_plan_id,
-                  p2.plan as suggested_plan,
-                  p2.calls as suggested_plan_calls
-                FROM s
-                JOIN p p1 ON p1.crn = 1 AND s.queryid = p1.queryid
-                JOIN p p2 ON p2.arn = 1 AND s.queryid = p2.queryid;
+                SELECT
+                  (EXTRACT(epoch FROM now()) * 1e9)::int8 AS epoch_ns,
+                  queryid,
+                  planid,
+                  plan,
+                  calls,
+                  total_exec_time,
+                  (total_exec_time / calls) as avg_exec_time
+                FROM 
+                (
+                  (
+                    SELECT 
+                      p.*
+                    FROM p_data p 
+                    JOIN q_data q ON q.queryid = p.queryid
+                    ORDER BY q.total_exec_time DESC
+                    LIMIT 100
+                  )
+
+                  UNION
+
+                  (
+                    SELECT 
+                      p.*
+                    FROM p_data p
+                    JOIN q_data q ON q.queryid = p.queryid
+                    ORDER BY q.calls DESC
+                    LIMIT 100
+                  )
+
+                  UNION
+
+                  (
+                    SELECT 
+                      p.*
+                    FROM p_data p
+                    JOIN q_data q ON q.queryid = p.queryid
+                    ORDER BY q.shared_blks_read DESC
+                    LIMIT 100
+                  )
+
+                  UNION
+
+                  (
+                    SELECT 
+                      p.*
+                    FROM p_data p
+                    JOIN q_data q ON q.queryid = p.queryid
+                    ORDER BY q.shared_blks_written DESC
+                    LIMIT 100
+                  )
+                )
