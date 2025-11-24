@@ -14,7 +14,7 @@ metrics:
                     max(p.queryid)::int8 as queryid,
                     p.planid,
                     sum(p.calls)::int8 as calls,
-                    round(sum(p.total_exec_time)::numeric, 3)::double precision AS total_exec_time,
+                    round(sum(p.total_exec_time)::numeric, 3)::double precision AS total_plan_exec_time,
                     max(p.plan::varchar(8000)) as plan
                   FROM pg_stat_plans p
                   WHERE
@@ -52,12 +52,11 @@ metrics:
 
                 SELECT
                   (EXTRACT(epoch FROM now()) * 1e9)::int8 AS epoch_ns,
-                  queryid,
-                  planid,
+                  queryid::int8,
+                  planid::int8,
                   plan,
-                  calls,
-                  total_exec_time,
-                  (total_exec_time / calls) as avg_exec_time
+                  calls::int8,
+                  total_plan_exec_time::int8,
                 FROM 
                 (
                   (
