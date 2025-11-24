@@ -1,0 +1,642 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 46,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "pgwatch-metrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_plan_run_time"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Total runtime"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              },
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Query ID"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Opens  'Single query details' dashboard for that queryid",
+                    "url": "/d/single-query-details?orgId=1&var-dbname=$dbname&var-queryid=${__value.raw}&from=${__from}&to=${__to}"
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 225
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "planid"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Plan ID"
+              },
+              {
+                "id": "custom.width",
+                "value": 225
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "plan"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Plan"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "12.1.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgwatch-metrics"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\n  total_plan_run_time,\n  queryid,\n  planid,\n  plan\nfrom (\nselect\n  sum(tt - tt_lag) as total_plan_run_time,\n  max(queryid) as queryid,\n  planid,\n  case when length(plan) > 250 then plan::varchar(250) || '...' else plan end as plan\nfrom (\n  select\n    data->>'queryid' as queryid,\n    data->>'planid' as planid, \n    data->>'plan' as plan,\n    (data->>'total_plan_exec_time')::float8 as tt, \n    lag((data->>'total_plan_exec_time')::float8) over w as tt_lag,\n    time\n  from stat_plans\n    where dbname = '$dbname' and $__timeFilter(time) and (data->>'queryid')::int8 = $queryid\n  window w as (partition by data->>'planid' order by time)\n) y\ngroup by planid, plan\nhaving sum(tt - tt_lag) > 0\norder by 1 desc nulls last\nlimit $top\n) z\norder by 1 desc nulls last",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Top $top plans for query by total run time",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "pgwatch-metrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "calls"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Calls"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Query ID"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Opens  'Single query details' dashboard for that queryid",
+                    "url": "/d/single-query-details?orgId=1&var-dbname=$dbname&var-queryid=${__value.raw}&from=${__from}&to=${__to}"
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 225
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "planid"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Plan ID"
+              },
+              {
+                "id": "custom.width",
+                "value": 225
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "plan"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Plan"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "12.1.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgwatch-metrics"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\n  calls,\n  queryid,\n  planid,\n  plan\nfrom (\nselect\n  sum(calls - calls_lag)::int8 as calls,\n  max(queryid) as queryid,\n  planid,\n  case when length(plan) > 250 then plan::varchar(250) || '...' else plan end as plan\nfrom (\n  select\n    data->>'queryid' as queryid,\n    data->>'planid' as planid, \n    data->>'plan' as plan,\n    (data->>'calls')::float8 as calls, \n    lag((data->>'calls')::float8) over w as calls_lag,\n    time\n  from stat_plans\n    where dbname = '$dbname' and $__timeFilter(time) and (data->>'queryid')::int8 = $queryid\n  window w as (partition by data->>'planid' order by time)\n) y\nwhere calls > calls_lag\ngroup by planid, plan\norder by 1 desc nulls last\nlimit $top\n) z\norder by 1 desc nulls last;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Top $top plans for query by calls",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "pgwatch-metrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "avg_plan_run_time"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Avg. runtime"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              },
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Query ID"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Opens  'Single query details' dashboard for that queryid",
+                    "url": "/d/single-query-details?orgId=1&var-dbname=$dbname&var-queryid=${__value.raw}&from=${__from}&to=${__to}"
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 225
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "planid"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Plan ID"
+              },
+              {
+                "id": "custom.width",
+                "value": 225
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "plan"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Plan"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "12.1.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "pgwatch-metrics"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\n  avg_plan_run_time,\n  queryid,\n  planid,\n  plan\nfrom (\nselect\n  avg((tt - tt_lag)::numeric / (calls - calls_lag)) as avg_plan_run_time,\n  max(queryid) as queryid,\n  planid,\n  case when length(plan) > 250 then plan::varchar(250) || '...' else plan end as plan\nfrom (\n  select\n    data->>'queryid' as queryid,\n    data->>'planid' as planid, \n    data->>'plan' as plan,\n    (data->>'total_plan_exec_time')::float8 as tt, \n    lag((data->>'total_plan_exec_time')::float8) over w as tt_lag,\n    (data->>'calls')::float8 as calls, \n    lag((data->>'calls')::float8) over w as calls_lag,\n    time\n  from stat_plans\n    where dbname = '$dbname' and $__timeFilter(time) and (data->>'queryid')::int8 = $queryid\n  window w as (partition by data->>'planid' order by time)\n) y\nwhere tt > tt_lag\ngroup by planid, plan\norder by 1 desc nulls last\nlimit $top\n) z\norder by 1 desc nulls last;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Top $top plans for query by avg. runtime",
+      "type": "table"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "id": 4,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "### Brought to you by\n\n[![Cybertec – The PostgreSQL Database Company](https://www.cybertec-postgresql.com/wp-content/uploads/2025/02/cybertec-logo-white-blue.svg)](https://www.cybertec-postgresql.com/en/)\n",
+        "mode": "markdown"
+      },
+      "pluginVersion": "12.1.0",
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 41,
+  "tags": [
+    "pgwatch"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allowCustomValue": true,
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "definition": "SELECT dbname FROM admin.all_distinct_dbname_metrics WHERE metric = 'stat_plans';",
+        "label": "Source Name",
+        "name": "dbname",
+        "options": [],
+        "query": "SELECT dbname FROM admin.all_distinct_dbname_metrics WHERE metric = 'stat_plans';",
+        "refresh": 1,
+        "regex": "",
+        "sort": 5,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "definition": "SELECT DISTINCT data->>'queryid' FROM stat_plans WHERE dbname = '$dbname' AND $__timeFilter(time) ORDER BY 1;",
+        "label": "Query ID",
+        "name": "queryid",
+        "options": [],
+        "query": "SELECT DISTINCT data->>'queryid' FROM stat_plans WHERE dbname = '$dbname' AND $__timeFilter(time) ORDER BY 1;",
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "label": "Top",
+        "name": "top",
+        "options": [
+          {
+            "selected": false,
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "selected": true,
+            "text": "3",
+            "value": "3"
+          },
+          {
+            "selected": false,
+            "text": "5",
+            "value": "5"
+          },
+          {
+            "selected": false,
+            "text": "10",
+            "value": "10"
+          },
+          {
+            "selected": false,
+            "text": "15",
+            "value": "15"
+          },
+          {
+            "selected": false,
+            "text": "20",
+            "value": "20"
+          },
+          {
+            "selected": false,
+            "text": "30",
+            "value": "30"
+          },
+          {
+            "selected": false,
+            "text": "40",
+            "value": "40"
+          },
+          {
+            "selected": false,
+            "text": "50",
+            "value": "50"
+          }
+        ],
+        "query": "1,3,5,10,15,20,30,40,50",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Stat Plans Top",
+  "uid": "stat-plans-top",
+  "version": 12
+}
