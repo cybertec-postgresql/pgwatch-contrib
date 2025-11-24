@@ -8,7 +8,7 @@ metrics:
         init_sql: CREATE EXTENSION IF NOT EXISTS pg_stat_statements; CREATE EXTENSION IF NOT EXISTS pg_stat_plans;
         sqls:
             16: |-
-                WITH p_data AS (
+                WITH /* pgwatch_generated */ p_data AS (
                   SELECT
                     max(p.dbid)::int8 as dbid,
                     max(p.queryid)::int8 as queryid,
@@ -56,7 +56,7 @@ metrics:
                   planid::int8,
                   plan,
                   calls::int8,
-                  total_plan_exec_time::int8,
+                  total_plan_exec_time::int8
                 FROM 
                 (
                   (
