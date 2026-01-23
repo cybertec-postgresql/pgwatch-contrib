@@ -1,0 +1,103 @@
+metrics:
+    stat_plans:
+        description: >
+            This metric collects statistics from the `pg_stat_plans` extension.
+            It provides insights about different plans for the most resource intensive queries, 
+            including plan, number of calls, and execution times.
+            This metric is useful for monitoring debugging query plans.
+        init_sql: CREATE EXTENSION IF NOT EXISTS pg_stat_statements; CREATE EXTENSION IF NOT EXISTS pg_stat_plans;
+        sqls:
+            16: |-
+                WITH /* pgwatch_generated */ p_data AS (
+                  SELECT
+                    max(p.dbid)::int8 as dbid,
+                    max(p.queryid)::int8 as queryid,
+                    p.planid,
+                    sum(p.calls)::int8 as calls,
+                    round(sum(p.total_exec_time)::numeric, 3)::double precision AS total_plan_exec_time,
+                    max(p.plan::varchar(15000)) as plan
+                  FROM pg_stat_plans p
+                  WHERE
+                    dbid = (SELECT oid FROM pg_database WHERE datname = current_database())
+                  GROUP BY p.planid
+                ), q_data AS (
+                  SELECT
+                      max(s.dbid) as dbid,
+                      queryid,
+                      sum(s.calls)::int8 AS calls,
+                      round(sum(s.total_exec_time)::numeric, 3)::double precision AS total_exec_time,
+                      sum(shared_blks_read)::int8 AS shared_blks_read,
+                      sum(shared_blks_written)::int8 AS shared_blks_written
+                  FROM
+                      pg_stat_statements s
+                  WHERE
+                      calls > 5
+                      AND total_exec_time > 5
+                      AND dbid = (SELECT oid FROM pg_database WHERE datname = current_database())
+                          AND NOT upper(s.query::varchar(50))
+                          LIKE ANY (ARRAY[
+                              'DEALLOCATE%',
+                              'SET %',
+                              'RESET %',
+                              'BEGIN%',
+                              'BEGIN;',
+                              'COMMIT%',
+                              'END%',
+                              'ROLLBACK%',
+                              'SHOW%'
+                              ])
+                  GROUP BY
+                      queryid
+                )
+
+                SELECT
+                  (EXTRACT(epoch FROM now()) * 1e9)::int8 AS epoch_ns,
+                  queryid::int8,
+                  planid::int8,
+                  plan,
+                  calls::int8,
+                  total_plan_exec_time::int8
+                FROM 
+                (
+                  (
+                    SELECT 
+                      p.*
+                    FROM p_data p 
+                    JOIN q_data q ON q.queryid = p.queryid
+                    ORDER BY q.total_exec_time DESC
+                    LIMIT 100
+                  )
+
+                  UNION
+
+                  (
+                    SELECT 
+                      p.*
+                    FROM p_data p
+                    JOIN q_data q ON q.queryid = p.queryid
+                    ORDER BY q.calls DESC
+                    LIMIT 100
+                  )
+
+                  UNION
+
+                  (
+                    SELECT 
+                      p.*
+                    FROM p_data p
+                    JOIN q_data q ON q.queryid = p.queryid
+                    ORDER BY q.shared_blks_read DESC
+                    LIMIT 100
+                  )
+
+                  UNION
+
+                  (
+                    SELECT 
+                      p.*
+                    FROM p_data p
+                    JOIN q_data q ON q.queryid = p.queryid
+                    ORDER BY q.shared_blks_written DESC
+                    LIMIT 100
+                  )
+                )
