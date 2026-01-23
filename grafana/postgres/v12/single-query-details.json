@@ -1354,9 +1354,10 @@
             "type": "grafana-postgresql-datasource",
             "uid": "pgwatch-metrics"
           },
+          "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\n  total_plan_exec_time,\n  calls,\n  (total_plan_exec_time / calls) as avg_plan_exec_time,\n  planid,\n  plan\nfrom (\nselect\n  sum(tt - tt_lag) as total_plan_exec_time,\n  sum(calls - calls_lag) as calls,\n  planid,\n  case when length(plan) > 250 then plan::varchar(250) || '...' else plan end as plan\nfrom (\n  select\n    data->>'queryid' as queryid,\n    data->>'planid' as planid, \n    data->>'plan' as plan,\n    (data->>'total_plan_exec_time')::float8 as tt, \n    lag((data->>'total_plan_exec_time')::float8) over w as tt_lag,\n    (data->>'calls')::int8 as calls, \n    lag((data->>'calls')::int8) over w as calls_lag,\n    time\n  from stat_plans\n    where dbname = '$dbname' and $__timeFilter(time) and (data->>'queryid')::int8 = $queryid\n  window w as (partition by data->>'planid' order by time)\n) y\ngroup by planid, plan\nhaving sum(tt - tt_lag) > 0 AND sum(calls - calls_lag) > 0\norder by 1 desc, 2 desc nulls last\n) z\norder by 1 desc, 2 desc nulls last",
+          "rawSql": "select\n  total_plan_exec_time,\n  calls,\n  (total_plan_exec_time / calls) as avg_plan_exec_time,\n  planid,\n  plan\nfrom (\nselect\n  sum(tt - tt_lag) as total_plan_exec_time,\n  sum(calls - calls_lag) as calls,\n  planid,\n  case when length(plan) >= 15000 then plan::varchar(15000) || '...' else plan end as plan\nfrom (\n  select\n    data->>'queryid' as queryid,\n    data->>'planid' as planid, \n    data->>'plan' as plan,\n    (data->>'total_plan_exec_time')::float8 as tt, \n    lag((data->>'total_plan_exec_time')::float8) over w as tt_lag,\n    (data->>'calls')::int8 as calls, \n    lag((data->>'calls')::int8) over w as calls_lag,\n    time\n  from stat_plans\n    where dbname = '$dbname' and $__timeFilter(time) and (data->>'queryid')::int8 = $queryid\n  window w as (partition by data->>'planid' order by time)\n) y\ngroup by planid, plan\nhaving sum(tt - tt_lag) > 0 AND sum(calls - calls_lag) > 0\norder by 1 desc, 2 desc nulls last\n) z\norder by 1 desc, 2 desc nulls last",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1445,6 +1446,10 @@
         "auto": false,
         "auto_count": 30,
         "auto_min": "10s",
+        "current": {
+          "text": "30m",
+          "value": "30m"
+        },
         "name": "agg_interval",
         "options": [
           {
@@ -1453,7 +1458,7 @@
             "value": "1m"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "5m",
             "value": "5m"
           },
@@ -1468,7 +1473,7 @@
             "value": "15m"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "30m",
             "value": "30m"
           },

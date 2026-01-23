@@ -15,7 +15,7 @@ metrics:
                     p.planid,
                     sum(p.calls)::int8 as calls,
                     round(sum(p.total_exec_time)::numeric, 3)::double precision AS total_plan_exec_time,
-                    max(p.plan::varchar(8000)) as plan
+                    max(p.plan::varchar(15000)) as plan
                   FROM pg_stat_plans p
                   WHERE
                     dbid = (SELECT oid FROM pg_database WHERE datname = current_database())
