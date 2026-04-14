@@ -23,7 +23,7 @@ pydantic_core==2.33.2
 Pygments==2.19.2
 pyiceberg==0.9.1
 pyparsing==3.2.3
-pytest==8.4.1
+pytest==9.0.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 PyYAML==6.0.2
