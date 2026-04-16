@@ -1,6 +1,6 @@
 module github.com/destrex271/pgwatch3_rpc_server
 
-go 1.24.0
+go 1.25.0
 
 require (
 	cloud.google.com/go/pubsub/v2 v2.0.0
@@ -10,7 +10,7 @@ require (
 	github.com/parquet-go/parquet-go v0.23.0
 	github.com/rifaideen/talkative v0.1.2
 	github.com/segmentio/kafka-go v0.4.47
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.38.0
 	github.com/testcontainers/testcontainers-go/modules/elasticsearch v0.38.0
 	github.com/testcontainers/testcontainers-go/modules/gcloud v0.38.0
@@ -98,7 +98,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.7.5
+	github.com/jackc/pgx/v5 v5.9.0
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
