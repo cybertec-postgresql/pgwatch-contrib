@@ -7,6 +7,7 @@ require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.48.0
 	github.com/elastic/go-elasticsearch/v8 v8.19.7
 	github.com/marcboeker/go-duckdb v1.8.5
+	github.com/moby/moby/api v1.55.0
 	github.com/parquet-go/parquet-go v0.32.0
 	github.com/rifaideen/talkative v0.1.2
 	github.com/segmentio/kafka-go v0.4.51
@@ -38,7 +39,6 @@ require (
 	github.com/googleapis/gax-go/v2 v2.24.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
 	github.com/moby/go-archive v0.3.3 // indirect
-	github.com/moby/moby/api v1.55.0 // indirect
 	github.com/moby/moby/client v0.5.1 // indirect
 	github.com/parquet-go/bitpack v1.1.0 // indirect
 	github.com/parquet-go/jsonlite v1.5.5 // indirect

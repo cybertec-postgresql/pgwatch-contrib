@@ -8,6 +8,9 @@ import (
 	"testing"
 	"time"
 
+	mobycontainer "github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/network"
+
 	"github.com/destrex271/pgwatch3_rpc_server/sinks"
 	"github.com/destrex271/pgwatch3_rpc_server/sinks/pb"
 	testutils "github.com/destrex271/pgwatch3_rpc_server/sinks/test_utils"
@@ -21,7 +24,14 @@ func initContainer(ctx context.Context) (testcontainers.Container, error) {
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Image:        "apache/kafka:latest",
-			ExposedPorts: []string{"9092:9092"},
+			ExposedPorts: []string{"9092/tcp"},
+			// The tests and the in-container console consumer both talk to
+			// localhost:9092, so bind the container port to the same host port.
+			HostConfigModifier: func(hc *mobycontainer.HostConfig) {
+				hc.PortBindings = network.PortMap{
+					network.MustParsePort("9092/tcp"): []network.PortBinding{{HostPort: "9092"}},
+				}
+			},
 			WaitingFor:   wait.ForLog("Kafka Server started").WithStartupTimeout(120 * time.Second),
 			WorkingDir:   "/opt/kafka/bin/",
 		},
