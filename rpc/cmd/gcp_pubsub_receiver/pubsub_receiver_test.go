@@ -23,9 +23,8 @@ func TestMain(m *testing.M) {
 	var err error
 	pubsubContainer, err = tcpubsub.Run(
 		context.Background(),
-		"gcr.io/google.com/cloudsdktool/cloud-sdk:367.0.0-emulators",
+		"gcr.io/google.com/cloudsdktool/cloud-sdk:583.0.0-emulators",
 		tcpubsub.WithProjectID("pubsub-receiver-test-project"),
-		testcontainers.WithExposedPorts("8085:8085/tcp"),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("Server started"),
 		),

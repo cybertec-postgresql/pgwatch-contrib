@@ -28,7 +28,6 @@ func TestMain(m *testing.M) {
 		context.Background(),
 		"docker.elastic.co/elasticsearch/elasticsearch:8.19.2",
 		elasticsearch.WithPassword("pgwatch"),
-		testcontainers.WithExposedPorts("9200:9200/tcp"),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog(`"message":"started`),
 		),
