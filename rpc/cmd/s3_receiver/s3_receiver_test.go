@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"context"
 	"fmt"
 	"os"
@@ -28,6 +29,14 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	// These tests need a container; -short skips them so pull requests get a
+	// fast signal without a pile of containers competing on one runner.
+	flag.Parse()
+	if testing.Short() {
+		fmt.Println("skipping S3 receiver tests in short mode")
+		os.Exit(0)
+	}
+
 	ctx = context.Background()
 
 	container, err := initContainer(ctx)

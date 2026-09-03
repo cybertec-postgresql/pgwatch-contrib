@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -20,6 +21,14 @@ import (
 var pubsubContainer *tcpubsub.Container
 
 func TestMain(m *testing.M) {
+	// These tests need a container; -short skips them so pull requests get a
+	// fast signal without a pile of containers competing on one runner.
+	flag.Parse()
+	if testing.Short() {
+		fmt.Println("skipping Pub/Sub receiver tests in short mode")
+		os.Exit(0)
+	}
+
 	var err error
 	pubsubContainer, err = tcpubsub.Run(
 		context.Background(),

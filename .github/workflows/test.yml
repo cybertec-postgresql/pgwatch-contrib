@@ -9,6 +9,10 @@ on:
     branches: [ "main" ]
     paths:
       - "rpc/**"
+  schedule:
+    # Nightly full run, including the container-backed receivers that pull
+    # requests skip.
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -72,16 +76,23 @@ jobs:
         pip install -r cmd/pyiceberg_receiver/requirements.txt
 
     - name: gRPC Golang Tests
+      # Pull requests run with -short, which skips the container-backed
+      # receivers: a dozen containers on one runner made the job slow and
+      # flaky. They still run on pushes to main, nightly and on demand.
+      env:
+        SHORT: ${{ github.event_name == 'pull_request' && '-short' || '' }}
       run: |
         go generate ./sinks/pb
-        go test -timeout 20m -failfast -v -coverprofile=profile.cov ./...
+        go test -timeout 20m -failfast -v $SHORT -coverprofile=profile.cov ./...
 
     - name: gRPC Python Tests
+      if: github.event_name != 'pull_request'
       run: |
         python3 -m grpc_tools.protoc -I sinks/pb --python_out=cmd/pyiceberg_receiver --grpc_python_out=cmd/pyiceberg_receiver sinks/pb/pgwatch.proto
         pytest
 
     - name: Coveralls
+      if: github.event_name != 'pull_request'
       uses: coverallsapp/github-action@v2
       with:
         file: rpc/profile.cov 

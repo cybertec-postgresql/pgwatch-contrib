@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"flag"
 	"context"
 	"io"
 	"os"
@@ -50,6 +52,14 @@ var err error
 var ctx = context.Background()
 
 func TestMain(m *testing.M) {
+	// These tests need a container; -short skips them so pull requests get a
+	// fast signal without a pile of containers competing on one runner.
+	flag.Parse()
+	if testing.Short() {
+		fmt.Println("skipping Kafka receiver tests in short mode")
+		os.Exit(0)
+	}
+
 	container, err = initContainer(ctx)
 	if err != nil {
 		panic(err)
