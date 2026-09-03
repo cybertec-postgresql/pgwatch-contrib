@@ -28,7 +28,10 @@ func TestMain(m *testing.M) {
 		context.Background(),
 		"docker.elastic.co/elasticsearch/elasticsearch:8.19.2",
 		elasticsearch.WithPassword("pgwatch"),
-		testcontainers.WithWaitStrategy(
+		// Elasticsearch needs well over the default 60s deadline to boot on a
+		// runner that is busy with the other receivers' containers.
+		testcontainers.WithWaitStrategyAndDeadline(
+			3*time.Minute,
 			wait.ForLog(`"message":"started`),
 		),
 	)
