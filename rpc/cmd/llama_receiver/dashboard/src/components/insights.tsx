@@ -16,7 +16,7 @@ interface Insight {
 }
 
 
-export function InsightsComponent({data, db_id}) {
+export function InsightsComponent({data, db_id}: {data: Insight[] | null, db_id: string}) {
   const [searchTerm, setSearchTerm] = useState('')
   console.log(data)
 

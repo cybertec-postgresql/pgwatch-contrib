@@ -1,13 +1,13 @@
 package main
 
 import (
+	"flag"
 	"context"
 	"fmt"
 	"os"
 	"testing"
 
 	testutils "github.com/destrex271/pgwatch3_rpc_server/sinks/test_utils"
-	"github.com/docker/go-connections/nat"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/localstack"
@@ -24,11 +24,19 @@ func initContainer(ctx context.Context) (*localstack.LocalStackContainer, error)
 
 var (
 	ctx context.Context
-	mappedPort nat.Port
+	mappedPort string
 	host string
 )
 
 func TestMain(m *testing.M) {
+	// These tests need a container; -short skips them so pull requests get a
+	// fast signal without a pile of containers competing on one runner.
+	flag.Parse()
+	if testing.Short() {
+		fmt.Println("skipping S3 receiver tests in short mode")
+		os.Exit(0)
+	}
+
 	ctx = context.Background()
 
 	container, err := initContainer(ctx)
@@ -39,10 +47,11 @@ func TestMain(m *testing.M) {
 		_ = container.Terminate(ctx)
 	}()
 
-	mappedPort, err = container.MappedPort(ctx, nat.Port("4566/tcp"))
+	port, err := container.MappedPort(ctx, "4566/tcp")
 	if err != nil {
 		panic(err)
 	}
+	mappedPort = port.Port()
 
 	provider, err := testcontainers.NewDockerProvider()
 	if err != nil {
@@ -65,7 +74,7 @@ var client *S3Receiver
 
 func TestNewS3Receiver(t *testing.T) {
 	var err error
-	client, err = NewS3Receiver(fmt.Sprintf("http://%s:%d", host, mappedPort.Int()), "us-east-1", "test", "test")
+	client, err = NewS3Receiver(fmt.Sprintf("http://%s:%s", host, mappedPort), "us-east-1", "test", "test")
 	assert.NoError(t, err, "error encountered while creating S3Receiver")
 	assert.NotNil(t, client, "received nil instead of client")
 }

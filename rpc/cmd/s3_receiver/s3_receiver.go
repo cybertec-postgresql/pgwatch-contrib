@@ -17,16 +17,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 )
 
 type S3Receiver struct {
-	S3Client  *s3.Client
-	S3Manager *manager.Uploader
-	Ctx       context.Context
+	S3Client *s3.Client
+	Ctx      context.Context
 	sinks.SyncMetricHandler
 }
 
@@ -118,17 +116,11 @@ func (r *S3Receiver) UpdateMeasurements(ctx context.Context, msg *pb.Measurement
 
 		// Get buffer
 		buffer := bytes.NewReader(jsonData)
-		var partMiBs int64 = 10
-
-		// Setup uploader
-		uploader := manager.NewUploader(r.S3Client, func(u *manager.Uploader) {
-			u.PartSize = partMiBs * 1024 * 1024
-		})
 
 		objectKey := msg.DBName + "_" + strconv.FormatInt(time.Now().UTC().Unix(), 10)
 
 		// Upload data
-		_, err = uploader.Upload(context.TODO(), &s3.PutObjectInput{
+		_, err = r.S3Client.PutObject(ctx, &s3.PutObjectInput{
 			Bucket: aws.String(msg.GetDBName()),
 			Key:    aws.String(objectKey),
 			Body:   buffer,

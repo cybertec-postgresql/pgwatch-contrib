@@ -1,12 +1,17 @@
 package main
 
 import (
+	"fmt"
+	"flag"
 	"context"
 	"io"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	mobycontainer "github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/network"
 
 	"github.com/destrex271/pgwatch3_rpc_server/sinks"
 	"github.com/destrex271/pgwatch3_rpc_server/sinks/pb"
@@ -21,7 +26,14 @@ func initContainer(ctx context.Context) (testcontainers.Container, error) {
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Image:        "apache/kafka:latest",
-			ExposedPorts: []string{"9092:9092"},
+			ExposedPorts: []string{"9092/tcp"},
+			// The tests and the in-container console consumer both talk to
+			// localhost:9092, so bind the container port to the same host port.
+			HostConfigModifier: func(hc *mobycontainer.HostConfig) {
+				hc.PortBindings = network.PortMap{
+					network.MustParsePort("9092/tcp"): []network.PortBinding{{HostPort: "9092"}},
+				}
+			},
 			WaitingFor:   wait.ForLog("Kafka Server started").WithStartupTimeout(120 * time.Second),
 			WorkingDir:   "/opt/kafka/bin/",
 		},
@@ -40,6 +52,14 @@ var err error
 var ctx = context.Background()
 
 func TestMain(m *testing.M) {
+	// These tests need a container; -short skips them so pull requests get a
+	// fast signal without a pile of containers competing on one runner.
+	flag.Parse()
+	if testing.Short() {
+		fmt.Println("skipping Kafka receiver tests in short mode")
+		os.Exit(0)
+	}
+
 	container, err = initContainer(ctx)
 	if err != nil {
 		panic(err)
@@ -65,7 +85,10 @@ func TestKafka_UpdateMeasurements(t *testing.T) {
 	assert.NoError(t, err, "Error encountered while updating measurements")
 
 	// Try to consume data added to topic
-	cmd := []string{"timeout", "10s", "/opt/kafka/bin/kafka-console-consumer.sh", "--bootstrap-server", "localhost:9092", "--topic", "test", "--from-beginning"}
+	// --max-messages makes the consumer exit as soon as the measurement arrives;
+	// the timeout is only a safety net for a busy runner, where the consumer's
+	// JVM startup alone can eat a short fixed window.
+	cmd := []string{"timeout", "60s", "/opt/kafka/bin/kafka-console-consumer.sh", "--bootstrap-server", "localhost:9092", "--topic", "test", "--from-beginning", "--max-messages", "1"}
 	_, reader, err := container.Exec(ctx, cmd)
 	assert.NoError(t, err)
 

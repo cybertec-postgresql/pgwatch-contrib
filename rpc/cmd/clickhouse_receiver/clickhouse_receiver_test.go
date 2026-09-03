@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"context"
 	"fmt"
 	"os"
@@ -46,6 +47,14 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	// These tests need a container; -short skips them so pull requests get a
+	// fast signal without a pile of containers competing on one runner.
+	flag.Parse()
+	if testing.Short() {
+		fmt.Println("skipping ClickHouse receiver tests in short mode")
+		os.Exit(0)
+	}
+
 	container, err := initContainer(ctx, User, Password, DBName)
 	if err != nil {
 		panic(err)
@@ -56,7 +65,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	serverURI = fmt.Sprintf("127.0.0.1:%d", mappedPort.Int())
+	serverURI = fmt.Sprintf("127.0.0.1:%s", mappedPort.Port())
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
@@ -81,7 +90,7 @@ func TestClickHouseReceiver(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	serverURI = fmt.Sprintf("127.0.0.1:%d", mappedPort.Int())
+	serverURI = fmt.Sprintf("127.0.0.1:%s", mappedPort.Port())
 
 	recv, err := NewClickHouseReceiver(User, Password, DBName, serverURI, true)
 	assert.NoError(t, err)

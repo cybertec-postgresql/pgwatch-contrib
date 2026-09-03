@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -23,14 +24,26 @@ var esContainer *elasticsearch.ElasticsearchContainer
 var esHttpClient *http.Client
 
 func TestMain(m *testing.M) {
+	// These tests need a container; -short skips them so pull requests get a
+	// fast signal without a pile of containers competing on one runner.
+	flag.Parse()
+	if testing.Short() {
+		fmt.Println("skipping Elasticsearch receiver tests in short mode")
+		os.Exit(0)
+	}
+
 	var err error
 	esContainer, err = elasticsearch.Run(
 		context.Background(),
 		"docker.elastic.co/elasticsearch/elasticsearch:8.19.2",
 		elasticsearch.WithPassword("pgwatch"),
-		testcontainers.WithExposedPorts("9200:9200/tcp"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog(`"message":"started`),
+		// Elasticsearch needs well over the default 60s to boot on a runner
+		// that is busy with the other receivers' containers. The timeout has
+		// to go on the log strategy itself; the enclosing deadline does not
+		// override it.
+		testcontainers.WithWaitStrategyAndDeadline(
+			5*time.Minute,
+			wait.ForLog(`"message":"started`).WithStartupTimeout(3*time.Minute),
 		),
 	)
 

@@ -4,3 +4,7 @@
 *pb2*.py
 __pycache__/
 .pytest_cache/
+# Artifacts left behind by the receiver tests
+rpc/cmd/duckdb_receiver/test_tmp/
+rpc/cmd/csv_receiver/*.csv
+profile.cov

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -20,12 +21,19 @@ import (
 var pubsubContainer *tcpubsub.Container
 
 func TestMain(m *testing.M) {
+	// These tests need a container; -short skips them so pull requests get a
+	// fast signal without a pile of containers competing on one runner.
+	flag.Parse()
+	if testing.Short() {
+		fmt.Println("skipping Pub/Sub receiver tests in short mode")
+		os.Exit(0)
+	}
+
 	var err error
 	pubsubContainer, err = tcpubsub.Run(
 		context.Background(),
-		"gcr.io/google.com/cloudsdktool/cloud-sdk:367.0.0-emulators",
+		"gcr.io/google.com/cloudsdktool/cloud-sdk:583.0.0-emulators",
 		tcpubsub.WithProjectID("pubsub-receiver-test-project"),
-		testcontainers.WithExposedPorts("8085:8085/tcp"),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("Server started"),
 		),

@@ -5,8 +5,8 @@ export const metadata: Metadata = {
   title: 'Insgiht for DB',
 };
 
-export default async function Page({ params }) {
-    let id = params.id
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
     
     const API_ENDPOINT = process.env.API_ENDPOINT
     let response = await fetch(`${API_ENDPOINT}/get_database_insight?db_id=${id}`)
