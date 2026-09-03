@@ -2,6 +2,7 @@
 .vscode/
 *pb.go
 *pb2*.py
+rpc/sinks/pb/pgwatch.proto
 __pycache__/
 .pytest_cache/
 # Artifacts left behind by the receiver tests

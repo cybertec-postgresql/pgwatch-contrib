@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/destrex271/pgwatch3_rpc_server/sinks"
-	testutils "github.com/destrex271/pgwatch3_rpc_server/sinks/test_utils"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks"
+	testutils "github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks/test_utils"
 	"github.com/stretchr/testify/assert"
 )
 

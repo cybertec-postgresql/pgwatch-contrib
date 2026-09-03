@@ -35,11 +35,13 @@ export PGWATCH_RPC_SERVER_KEY="/path/to/server.key"
 
 To start any of the provided receivers, you can use:
 ```bash
-# generate golang code from protobuf 
+# fetch pgwatch.proto from the pinned pgwatch dependency (github.com/cybertec-postgresql/pgwatch/v6)
+# and generate golang code from it
 go generate ./sinks/pb
 go run ./cmd/[receiver_dir] [OPTIONS]
 
-# OR
+# OR, to build a Python sink (still run `go generate ./sinks/pb` first --
+# it's what fetches and writes sinks/pb/pgwatch.proto)
 
 # generate python gRPC code from protobuf
 python3 -m grpc_tools.protoc -I sinks/pb --python_out=cmd/pyiceberg_receiver --grpc_python_out=cmd/pyiceberg_receiver sinks/pb/pgwatch.proto

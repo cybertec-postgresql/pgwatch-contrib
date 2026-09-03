@@ -11,7 +11,7 @@ import (
 
 	"cloud.google.com/go/pubsub/v2"
 	"cloud.google.com/go/pubsub/v2/apiv1/pubsubpb"
-	testutils "github.com/destrex271/pgwatch3_rpc_server/sinks/test_utils"
+	testutils "github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks/test_utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	tcpubsub "github.com/testcontainers/testcontainers-go/modules/gcloud/pubsub"

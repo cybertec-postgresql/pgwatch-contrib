@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS measurements(
 
 ## Dependencies
 
-* `github.com/destrex271/pgwatch3_rpc_server/sinks`
+* `github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks`
 * `github.com/cybertec-postgresql/pgwatch/v3/api`
 * `github.com/marcboeker/go-duckdb`
 

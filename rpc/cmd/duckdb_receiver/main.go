@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/destrex271/pgwatch3_rpc_server/sinks"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks"
 	_ "github.com/marcboeker/go-duckdb"
 )
 

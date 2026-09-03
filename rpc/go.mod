@@ -1,10 +1,11 @@
-module github.com/destrex271/pgwatch3_rpc_server
+module github.com/cybertec-postgresql/pgwatch-contrib/rpc
 
 go 1.26.0
 
 require (
 	cloud.google.com/go/pubsub/v2 v2.7.0
 	github.com/ClickHouse/clickhouse-go/v2 v2.48.0
+	github.com/cybertec-postgresql/pgwatch/v6 v6.0.0-beta.0.20260903145559-1240b76b6cfd
 	github.com/elastic/go-elasticsearch/v8 v8.19.7
 	github.com/marcboeker/go-duckdb v1.8.5
 	github.com/moby/moby/api v1.55.0

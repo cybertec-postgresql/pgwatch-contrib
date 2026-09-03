@@ -1,4 +1,11 @@
-// Package pb contains the protobuf definitions for pgwatch gRPC API.
+// Package pb contains the Go/gRPC bindings for pgwatch's RPC sink protocol.
+//
+// pgwatch.proto is not hand-maintained here: it is copied on every
+// `go generate` from the pgwatch.proto shipped by the pinned
+// github.com/cybertec-postgresql/pgwatch/v6 dependency (see api/pb in that
+// module), so the schema never drifts from upstream. To pick up a schema
+// change, bump that dependency (`go get -u github.com/cybertec-postgresql/pgwatch/v6`)
+// and re-run go generate.
 //
 // To generate the Go code from the protobuf definitions, you need to install:
 //   - protoc (Protocol Buffers compiler)
@@ -20,5 +27,5 @@
 // Then run: go generate ./sinks/pb/
 package pb
 
-// Generate protobuf files
-//go:generate protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative pgwatch.proto
+// Fetch pgwatch.proto from the pinned pgwatch dependency and generate protobuf files
+//go:generate go run ./gen

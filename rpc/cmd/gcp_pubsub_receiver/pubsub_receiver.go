@@ -7,8 +7,8 @@ import (
 
 	"cloud.google.com/go/pubsub/v2"
 	"cloud.google.com/go/pubsub/v2/apiv1/pubsubpb"
-	"github.com/destrex271/pgwatch3_rpc_server/sinks"
-	"github.com/destrex271/pgwatch3_rpc_server/sinks/pb"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks/pb"
 )
 
 type PubsubReceiver struct {
