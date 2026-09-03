@@ -75,7 +75,10 @@ func TestKafka_UpdateMeasurements(t *testing.T) {
 	assert.NoError(t, err, "Error encountered while updating measurements")
 
 	// Try to consume data added to topic
-	cmd := []string{"timeout", "10s", "/opt/kafka/bin/kafka-console-consumer.sh", "--bootstrap-server", "localhost:9092", "--topic", "test", "--from-beginning"}
+	// --max-messages makes the consumer exit as soon as the measurement arrives;
+	// the timeout is only a safety net for a busy runner, where the consumer's
+	// JVM startup alone can eat a short fixed window.
+	cmd := []string{"timeout", "60s", "/opt/kafka/bin/kafka-console-consumer.sh", "--bootstrap-server", "localhost:9092", "--topic", "test", "--from-beginning", "--max-messages", "1"}
 	_, reader, err := container.Exec(ctx, cmd)
 	assert.NoError(t, err)
 
