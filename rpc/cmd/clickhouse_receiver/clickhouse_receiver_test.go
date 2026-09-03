@@ -56,7 +56,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	serverURI = fmt.Sprintf("127.0.0.1:%d", mappedPort.Int())
+	serverURI = fmt.Sprintf("127.0.0.1:%s", mappedPort.Port())
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
@@ -81,7 +81,7 @@ func TestClickHouseReceiver(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	serverURI = fmt.Sprintf("127.0.0.1:%d", mappedPort.Int())
+	serverURI = fmt.Sprintf("127.0.0.1:%s", mappedPort.Port())
 
 	recv, err := NewClickHouseReceiver(User, Password, DBName, serverURI, true)
 	assert.NoError(t, err)

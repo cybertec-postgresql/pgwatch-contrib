@@ -8,10 +8,16 @@ import { Button } from "@/components/ui/button"
 import { DatabaseIcon, SearchIcon } from 'lucide-react'
 import Link from 'next/link'
 
-export async function DashboardComponent({data}) {
+interface Database {
+  id: string
+  name: string
+  measurement_count: number
+}
+
+export function DashboardComponent({data}: {data: Database[]}) {
   const [searchTerm, setSearchTerm] = useState('')
   
-  const filteredDatabases = data.filter(db =>
+  const filteredDatabases = data.filter((db: Database) =>
     db.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 

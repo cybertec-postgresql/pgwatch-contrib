@@ -24,10 +24,12 @@ jobs:
     steps:  
 
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Golang
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: 'rpc/go.mod'
 
       - name: Setup Protobuf
         uses: ./.github/actions/setup-protobuf
@@ -36,7 +38,7 @@ jobs:
         run: go generate ./sinks/pb/
 
       - name: GolangCI-Lint 
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
           working-directory: rpc
@@ -47,21 +49,21 @@ jobs:
       run:
         working-directory: rpc
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v7
       with:
-        go-version: '1.23'
+        go-version-file: 'rpc/go.mod'
         cache-dependency-path: 'rpc/go.sum'
 
     - name: Setup Protobuf
       uses: ./.github/actions/setup-protobuf
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
-        python-version: '3.12' 
+        python-version: '3.13' 
 
     - name: Install dependencies
       run: |
