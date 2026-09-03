@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/destrex271/pgwatch3_rpc_server/sinks/pb"
-	testutils "github.com/destrex271/pgwatch3_rpc_server/sinks/test_utils"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks/pb"
+	testutils "github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks/test_utils"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/destrex271/pgwatch3_rpc_server/sinks"
-	"github.com/destrex271/pgwatch3_rpc_server/sinks/pb"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks/pb"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

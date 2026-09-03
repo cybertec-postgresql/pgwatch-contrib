@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/destrex271/pgwatch3_rpc_server/sinks"
-	"github.com/destrex271/pgwatch3_rpc_server/sinks/pb"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks/pb"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rifaideen/talkative"
 )

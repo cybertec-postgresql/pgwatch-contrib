@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/destrex271/pgwatch3_rpc_server/sinks"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks"
 )
 
 func main() {

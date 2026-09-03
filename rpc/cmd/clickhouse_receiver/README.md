@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS Measurements(dbname String,custom_tags Map(String, St
 
 ## Dependencies
 
-* `github.com/destrex271/pgwatch3_rpc_server/sinks` (assumed to be a custom library)
+* `github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks` (assumed to be a custom library)
 * `github.com/cybertec-postgresql/pgwatch/v3/api`
 * `github.com/ClickHouse/clickhouse-go/v2`
 

@@ -11,7 +11,7 @@ This project implements a Parquet data receiver for the pgwatch3 monitoring tool
 
 ## Dependencies
 
-* `github.com/destrex271/pgwatch3_rpc_server/sinks` (assumed to be a custom library)
+* `github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks` (assumed to be a custom library)
 * `github.com/cybertec-postgresql/pgwatch/v3/api`
 * `github.com/parquet-go/parquet-go`
 

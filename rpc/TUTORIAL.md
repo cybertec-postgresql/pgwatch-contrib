@@ -28,7 +28,7 @@ This file defines the `main()` function and is responsible for:
 ```go
 import (
 	...
-	"github.com/destrex271/pgwatch3_rpc_server/sinks"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks"
 )
 
 func main() {
@@ -61,8 +61,8 @@ This file provides the core sink-specific implementation of the [`pgwatch` gRPC 
 ```go
 import (
 	...
-	"github.com/destrex271/pgwatch3_rpc_server/sinks"
-	"github.com/destrex271/pgwatch3_rpc_server/sinks/pb"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks/pb"
 )
 
 // struct type that implements pgwatch's required gRPC methods:

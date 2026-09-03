@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/destrex271/pgwatch3_rpc_server/sinks/pb"
+	"github.com/cybertec-postgresql/pgwatch-contrib/rpc/sinks/pb"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 )
